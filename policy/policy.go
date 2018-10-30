@@ -9,8 +9,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/LeChuckDE/open-ethereumclassic-pool/storage"
-	"github.com/LeChuckDE/open-ethereumclassic-pool/util"
+	"github.com/pcbuster/open-etc-pool/storage"
+	"github.com/pcbuster/open-etc-pool/util"
 )
 
 type Config struct {
