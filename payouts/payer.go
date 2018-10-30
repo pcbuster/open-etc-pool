@@ -16,7 +16,6 @@ import (
 )
 
 const txCheckInterval = 5 * time.Second
-
 type PayoutsConfig struct {
 	Enabled      bool   `json:"enabled"`
 	RequirePeers int64  `json:"requirePeers"`
@@ -34,11 +33,13 @@ type PayoutsConfig struct {
 
 func (self PayoutsConfig) GasHex() string {
 	gas, _ := new(big.Int).SetString(self.Gas, 10)
+	
 	return common.BigToHash(gas).Hex()
 }
 
 func (self PayoutsConfig) GasPriceHex() string {
 	gasPrice, _ := new(big.Int).SetString(self.GasPrice, 10)
+	
 	return common.BigToHash(gasPrice).Hex()
 }
 
@@ -121,7 +122,7 @@ func (u *PayoutsProcessor) process() {
 		amountInShannon := big.NewInt(amount)
 
 		// Shannon^2 = Wei
-		amountInWei := new(big.Int).Mul(amountInShannon, util.Shannon)
+		amountInWei := new(big.Int).Mul(amountInShannon, common.Shannon)
 
 		if !u.reachedThreshold(amountInShannon) {
 			continue
@@ -171,7 +172,7 @@ func (u *PayoutsProcessor) process() {
 			break
 		}
 
-		value := hexutil.EncodeBig(amountInWei)
+		value := common.BigToHash(amountInWei).Hex()
 		txHash, err := u.rpc.SendTransaction(u.config.Address, login, u.config.GasHex(), u.config.GasPriceHex(), value, u.config.AutoGas)
 		if err != nil {
 			log.Printf("Failed to send payment to %s, %v Shannon: %v. Check outgoing tx for %s in block explorer and docs/PAYOUTS.md",
@@ -197,22 +198,16 @@ func (u *PayoutsProcessor) process() {
 		// Wait for TX confirmation before further payouts
 		for {
 			log.Printf("Waiting for tx confirmation: %v", txHash)
-			time.Sleep(txCheckInterval)
+			time.Sleep(10 * time.Second)
 			receipt, err := u.rpc.GetTxReceipt(txHash)
 			if err != nil {
 				log.Printf("Failed to get tx receipt for %v: %v", txHash, err)
-				continue
 			}
-			// Tx has been mined
-			if receipt != nil && receipt.Confirmed() {
-				if receipt.Successful() {
-					log.Printf("Payout tx successful for %s: %s", login, txHash)
-				} else {
-					log.Printf("Payout tx failed for %s: %s. Address contract throws on incoming tx.", login, txHash)
-				}
-				break
-			}
+			if receipt != nil {
+			break
 		}
+	}
+		log.Printf("Payout tx for %s confirmed: %s", login, txHash)
 	}
 
 	if mustPay > 0 {
