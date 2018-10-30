@@ -63,13 +63,8 @@ func (s *ProxyServer) fetchBlockTemplate() {
 	if t != nil && t.Header == reply[0] {
 		return
 	}
-	diff := util.TargetHexToDiff(reply[2])
-	height, err := strconv.ParseUint(strings.Replace(reply[3], "0x", "", -1), 16, 64)
-	
-	pendingReply := &rpc.GetBlockReplyPart{
-		Difficulty: util.ToHex(s.config.Proxy.Difficulty),
-		Number:     reply[3],
-	}
+
+	pendingReply.Difficulty = util.ToHex(s.config.Proxy.Difficulty)
 
 	newTemplate := BlockTemplate{
 		Header:               reply[0],
@@ -82,7 +77,7 @@ func (s *ProxyServer) fetchBlockTemplate() {
 	}
 	// Copy job backlog and add current one
 	newTemplate.headers[reply[0]] = heightDiffPair{
-		diff:	util.TargetHexToDiff(reply[2]),
+		diff:   util.TargetHexToDiff(reply[2]),
 		height: height,
 	}
 	if t != nil {
