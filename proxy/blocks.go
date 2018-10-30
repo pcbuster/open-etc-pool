@@ -113,5 +113,5 @@ func (s *ProxyServer) fetchPendingBlock() (*rpc.GetBlockReplyPart, uint64, int64
 		log.Println("Can't parse pending block difficulty")
 		return nil, 0, 0, err
 	}
-	return reply, blockNumber, blockDiff, nil
+	return blockNumber, blockDiff, nil
 }
