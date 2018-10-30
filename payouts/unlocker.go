@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common/math"
+	"github.com/ethereumproject/go-ethereum/common"
 
 	"github.com/pcbuster/open-etc-pool/rpc"
 	"github.com/pcbuster/open-etc-pool/storage"
@@ -516,12 +516,10 @@ func (u *BlockUnlocker) getExtraRewardForTx(block *rpc.GetBlockReply) (*big.Int,
 			if !ok {
 				return nil, errors.New(fmt.Sprintf("malformed used gas: %s", receipt.GasUsed));
 			}
-
-			gasPrice, ok := new(big.Int).SetString(tx.GasPrice, 10)
+ 			gasPrice, ok := new(big.Int).SetString(tx.GasPrice, 10)
 			if !ok {
 				return nil, errors.New(fmt.Sprintf("malformed transaction gas price: %s", tx.GasPrice));
 			}
-
 			fee := new(big.Int).Mul(gasUsed, gasPrice)
 			amount.Add(amount, fee)
 		}
