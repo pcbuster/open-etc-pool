@@ -7,10 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/common"
 	"gopkg.in/redis.v3"
 
-	"github.com/LeChuckDE/open-ethereumclassic-pool/util"
+	"github.com/pcbuster/open-etc-pool/util"
 )
 
 type Config struct {
