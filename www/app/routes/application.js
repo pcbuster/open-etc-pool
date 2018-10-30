@@ -1,23 +1,31 @@
 import Route from '@ember/routing/route';
-import EmberObject from '@ember/object';
-import { inject } from '@ember/service';
 import { later } from '@ember/runloop';
 import $ from 'jquery';
+import Block from "../models/block";
 import config from '../config/environment';
 
 export default Route.extend({
-  intl: inject(),
-
-  beforeModel() {
-    this.get('intl').setLocale('en-us');
-  },
-
-	model: function() {
-    let url = config.APP.ApiUrl + 'api/stats';
+  model: function() {
+    let url = config.APP.ApiUrl + 'api/blocks';
     return $.getJSON(url).then(function(data) {
-      return EmberObject.create(data);
+      if (data.candidates) {
+        data.candidates = data.candidates.map(function(b) {
+          return Block.create(b);
+        });
+      }
+      if (data.immature) {
+        data.immature = data.immature.map(function(b) {
+          return Block.create(b);
+        });
+      }
+      if (data.matured) {
+        data.matured = data.matured.map(function(b) {
+          return Block.create(b);
+        });
+      }
+      return data;
     });
-	},
+  },
 
   setupController: function(controller, model) {
     this._super(controller, model);
