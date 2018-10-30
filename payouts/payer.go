@@ -8,12 +8,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 
-	"github.com/pcbuster/open-ethereumclassic-pool/rpc"
-	"github.com/pcbuster/open-ethereumclassic-pool/storage"
-	"github.com/pcbuster/open-ethereumclassic-pool/util"
+	"github.com/pcbuster/open-etc-pool/rpc"
+	"github.com/pcbuster/open-etc-pool/storage"
+	"github.com/pcbuster/open-etc-pool/util"
 )
+
+const txCheckInterval = 5 * time.Second
 
 type PayoutsConfig struct {
 	Enabled      bool   `json:"enabled"`
@@ -31,15 +33,13 @@ type PayoutsConfig struct {
 }
 
 func (self PayoutsConfig) GasHex() string {
-	gas, _ := new(big.Int).SetString(self.Gas, 10)
-
-	return common.BigToHash(gas).Hex()
+	x := util.String2Big(self.Gas)
+	return hexutil.EncodeBig(x)
 }
 
 func (self PayoutsConfig) GasPriceHex() string {
-	gasPrice, _ := new(big.Int).SetString(self.GasPrice, 10)
-
-	return common.BigToHash(gasPrice).Hex()
+	x := util.String2Big(self.GasPrice)
+	return hexutil.EncodeBig(x)
 }
 
 type PayoutsProcessor struct {
@@ -121,7 +121,7 @@ func (u *PayoutsProcessor) process() {
 		amountInShannon := big.NewInt(amount)
 
 		// Shannon^2 = Wei
-		amountInWei := new(big.Int).Mul(amountInShannon, common.Shannon)
+		amountInWei := new(big.Int).Mul(amountInShannon, util.Shannon)
 
 		if !u.reachedThreshold(amountInShannon) {
 			continue
@@ -171,7 +171,7 @@ func (u *PayoutsProcessor) process() {
 			break
 		}
 
-		value := common.BigToHash(amountInWei).Hex()
+		value := hexutil.EncodeBig(amountInWei)
 		txHash, err := u.rpc.SendTransaction(u.config.Address, login, u.config.GasHex(), u.config.GasPriceHex(), value, u.config.AutoGas)
 		if err != nil {
 			log.Printf("Failed to send payment to %s, %v Shannon: %v. Check outgoing tx for %s in block explorer and docs/PAYOUTS.md",
@@ -197,16 +197,22 @@ func (u *PayoutsProcessor) process() {
 		// Wait for TX confirmation before further payouts
 		for {
 			log.Printf("Waiting for tx confirmation: %v", txHash)
-			time.Sleep(10 * time.Second)
+			time.Sleep(txCheckInterval)
 			receipt, err := u.rpc.GetTxReceipt(txHash)
 			if err != nil {
 				log.Printf("Failed to get tx receipt for %v: %v", txHash, err)
+				continue
 			}
-			if receipt != nil {
+			// Tx has been mined
+			if receipt != nil && receipt.Confirmed() {
+				if receipt.Successful() {
+					log.Printf("Payout tx successful for %s: %s", login, txHash)
+				} else {
+					log.Printf("Payout tx failed for %s: %s. Address contract throws on incoming tx.", login, txHash)
+				}
 				break
 			}
 		}
-		log.Printf("Payout tx for %s confirmed: %s", login, txHash)
 	}
 
 	if mustPay > 0 {
