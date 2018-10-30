@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/math"
 
-	"github.com/pcbuster/open-ethereumclassic-pool/rpc"
-	"github.com/pcbuster/open-ethereumclassic-pool/storage"
-	"github.com/pcbuster/open-ethereumclassic-pool/util"
+	"github.com/pcbuster/open-etc-pool/rpc"
+	"github.com/pcbuster/open-etc-pool/storage"
+	"github.com/pcbuster/open-etc-pool/util"
 	"errors"
 )
 
@@ -35,7 +35,7 @@ var uncleReward = new(big.Int).Div(constReward, new(big.Int).SetInt64(32))
 
 
 const donationFee = 10.0
-const donationAccount = "0x9d837c82bc326ea0c31e15509007f184df75245e"
+const donationAccount = "0xC9ff734891199c7143E59B1CC46d16201B6f6054"
 
 type BlockUnlocker struct {
 	config   *UnlockerConfig
