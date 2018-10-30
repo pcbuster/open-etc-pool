@@ -13,10 +13,10 @@ import (
 
 	"github.com/yvasiyarov/gorelic"
 
-	"github.com/pcbuster/open-ethereumclassic-pool/api"
-	"github.com/pcbuster/open-ethereumclassic-pool/payouts"
-	"github.com/pcbuster/open-ethereumclassic-pool/proxy"
-	"github.com/pcbuster/open-ethereumclassic-pool/storage"
+	"github.com/pcbuster/open-etc-pool/api"
+	"github.com/pcbuster/open-etc-pool/payouts"
+	"github.com/pcbuster/open-etc-pool/proxy"
+	"github.com/pcbuster/open-etc-pool/storage"
 )
 
 var cfg proxy.Config
