@@ -55,28 +55,6 @@ type GetBlockReplyPart struct {
 	Difficulty string `json:"difficulty"`
 }
 
-const receiptStatusSuccessful = "0x1"
-
-type TxReceipt struct {
-	TxHash    string `json:"transactionHash"`
-	GasUsed   string `json:"gasUsed"`
-	BlockHash string `json:"blockHash"`
-	Status    string `json:"status"`
-}
-
-func (r *TxReceipt) Confirmed() bool {
-	return len(r.BlockHash) > 0
-}
-
-// Use with previous method
-func (r *TxReceipt) Successful() bool {
-	if len(r.Status) > 0 {
-		return r.Status == receiptStatusSuccessful
-	}
-	return true
-}
-
-
 type TxReceipt struct {
 	TxHash  string `json:"transactionHash"`
 	GasUsed string `json:"gasUsed"`
