@@ -9,8 +9,8 @@ import (
 
 	"github.com/ethereumproject/go-ethereum/common"
 
-	"github.com/pcbuster/open-ethereumclassic-pool/rpc"
-	"github.com/pcbuster/open-ethereumclassic-pool/util"
+	"github.com/pcbuster/open-etc-pool/rpc"
+	"github.com/pcbuster/open-etc-pool/util"
 )
 
 const maxBacklog = 3
