@@ -12,9 +12,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ethereumproject/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/pcbuster/open-ethereumclassic-pool/util"
+	"github.com/pcbuster/open-etc-pool/util"
 )
 
 type RPCClient struct {
@@ -55,9 +55,25 @@ type GetBlockReplyPart struct {
 	Difficulty string `json:"difficulty"`
 }
 
+const receiptStatusSuccessful = "0x1"
+
 type TxReceipt struct {
-	TxHash  string `json:"transactionHash"`
-	GasUsed string `json:"gasUsed"`
+	TxHash    string `json:"transactionHash"`
+	GasUsed   string `json:"gasUsed"`
+	BlockHash string `json:"blockHash"`
+	Status    string `json:"status"`
+}
+
+func (r *TxReceipt) Confirmed() bool {
+	return len(r.BlockHash) > 0
+}
+
+// Use with previous method
+func (r *TxReceipt) Successful() bool {
+	if len(r.Status) > 0 {
+		return r.Status == receiptStatusSuccessful
+	}
+	return true
 }
 
 type Tx struct {
@@ -165,13 +181,7 @@ func (r *RPCClient) GetBalance(address string) (*big.Int, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	balance, ok := new(big.Int).SetString(reply, 10)
-	if !ok {
-		return nil, errors.New(fmt.Sprintf("malformed balance: %d", reply));
-	}
-
-	return balance, err
+	return util.String2Big(reply), err
 }
 
 func (r *RPCClient) Sign(from string, s string) (string, error) {
@@ -182,6 +192,12 @@ func (r *RPCClient) Sign(from string, s string) (string, error) {
 		return reply, err
 	}
 	err = json.Unmarshal(*rpcResp.Result, &reply)
+	if err != nil {
+		return reply, err
+	}
+	if util.IsZeroHash(reply) {
+		err = errors.New("Can't sign message, perhaps account is locked")
+	}
 	return reply, err
 }
 
